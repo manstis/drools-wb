@@ -44,6 +44,7 @@ import org.drools.workbench.screens.guided.dtable.client.widget.table.events.cdi
 import org.drools.workbench.screens.guided.dtable.client.widget.table.events.cdi.RefreshAttributesPanelEvent;
 import org.drools.workbench.screens.guided.dtable.client.widget.table.events.cdi.RefreshConditionsPanelEvent;
 import org.drools.workbench.screens.guided.dtable.client.widget.table.events.cdi.RefreshMetaDataPanelEvent;
+import org.drools.workbench.screens.guided.dtable.client.widget.table.popovers.ColumnHeaderPopOver;
 import org.drools.workbench.screens.guided.dtable.model.GuidedDecisionTableEditorContent;
 import org.guvnor.common.services.shared.metadata.model.Overview;
 import org.jboss.errai.ioc.client.api.ManagedInstance;
@@ -105,6 +106,9 @@ public class GuidedDecisionTableModellerPresenterTest {
     @Mock
     private GuidedDecisionTableModellerContextMenuSupport contextMenuSupport;
 
+    @Mock
+    private ColumnHeaderPopOver columnHeaderPopOver;
+
     private GuidedDecisionTableModellerPresenter presenter;
 
     @Before
@@ -119,7 +123,8 @@ public class GuidedDecisionTableModellerPresenterTest {
                                                                                                        dtablePresenterProvider,
                                                                                                        contextMenuSupport,
                                                                                                        updateRadarEvent,
-                                                                                                       pinnedEvent );
+                                                                                                       pinnedEvent,
+                                                                                                       columnHeaderPopOver );
         presenter = spy( wrapped );
 
         when( dtablePresenterProvider.get() ).thenReturn( dtablePresenter );

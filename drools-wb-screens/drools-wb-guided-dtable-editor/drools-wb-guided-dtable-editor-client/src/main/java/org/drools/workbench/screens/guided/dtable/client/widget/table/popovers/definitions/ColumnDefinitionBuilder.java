@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package org.drools.workbench.screens.guided.dtable.client.resources.i18n;
+package org.drools.workbench.screens.guided.dtable.client.widget.table.popovers.definitions;
 
-import org.jboss.errai.ui.shared.api.annotations.TranslationKey;
+import org.drools.workbench.models.guided.dtable.shared.model.BaseColumn;
+import org.drools.workbench.screens.guided.dtable.client.widget.table.GuidedDecisionTableView;
+import org.uberfire.client.callbacks.Callback;
 
-public class GuidedDecisionTableErraiConstants {
+public interface ColumnDefinitionBuilder {
 
-    @TranslationKey(defaultValue = "")
-    public static final String RowContextMenuViewImpl_Title = "RowContextMenuViewImpl.title";
+    Class getSupportedColumnType();
 
-    @TranslationKey(defaultValue = "")
-    public static final String PopOverViewImpl_Title = "PopOverViewImpl.title";
+    void generateDefinition( final GuidedDecisionTableView.Presenter dtPresenter,
+                             final BaseColumn column,
+                             final Callback<String> afterGenerationCallback );
 
 }
