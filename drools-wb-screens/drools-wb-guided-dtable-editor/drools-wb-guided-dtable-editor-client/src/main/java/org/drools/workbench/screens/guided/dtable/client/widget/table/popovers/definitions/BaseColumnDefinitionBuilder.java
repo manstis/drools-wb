@@ -86,7 +86,7 @@ public abstract class BaseColumnDefinitionBuilder implements ColumnDefinitionBui
         final int start = _drl.indexOf( WHEN );
         final int end = _drl.indexOf( THEN );
 
-        if(start<0 || end<0) {
+        if ( start < 0 || end < 0 ) {
             return drl;
         }
         return drl.substring( start + THEN.length(),
@@ -97,7 +97,7 @@ public abstract class BaseColumnDefinitionBuilder implements ColumnDefinitionBui
         final String _drl = drl.toLowerCase();
         final int start = _drl.indexOf( THEN );
         final int end = _drl.indexOf( END );
-        if(start<0 || end<0) {
+        if ( start < 0 || end < 0 ) {
             return drl;
         }
         return drl.substring( start + THEN.length(),

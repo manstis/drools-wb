@@ -20,10 +20,27 @@ import org.drools.workbench.models.guided.dtable.shared.model.BaseColumn;
 import org.drools.workbench.screens.guided.dtable.client.widget.table.GuidedDecisionTableView;
 import org.uberfire.client.callbacks.Callback;
 
+/**
+ * Definition of a Builder that can generate a String representation of a column's definition.
+ */
 public interface ColumnDefinitionBuilder {
 
+    /**
+     * Returns the {@link Class} that this Builder supports.
+     * @return
+     */
     Class getSupportedColumnType();
 
+    /**
+     * Generates a {@link String} representation of a column's definition. This method does not
+     * return a {@link String} as the construction may require asynchronous calls to the server.
+     * @param dtPresenter
+     *         The Decision Table to which the column belongs.
+     * @param column
+     *         The column for which we need a build the definition.
+     * @param afterGenerationCallback
+     *         A callback to be invoked with the definition.
+     */
     void generateDefinition( final GuidedDecisionTableView.Presenter dtPresenter,
                              final BaseColumn column,
                              final Callback<String> afterGenerationCallback );

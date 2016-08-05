@@ -66,6 +66,7 @@ public class GuidedDecisionTableModellerPresenter implements GuidedDecisionTable
     private final ManagedInstance<GuidedDecisionTableView.Presenter> dtPresenterProvider;
     private final Event<RadarMenuBuilder.UpdateRadarEvent> updateRadarEvent;
     private final Event<DecisionTablePinnedEvent> pinnedEvent;
+    private final ColumnHeaderPopOver columnHeaderPopOver;
 
     private GuidedDecisionTableView.Presenter activeDecisionTable = null;
     private Set<GuidedDecisionTableView.Presenter> availableDecisionTables = new HashSet<GuidedDecisionTableView.Presenter>();
@@ -82,6 +83,7 @@ public class GuidedDecisionTableModellerPresenter implements GuidedDecisionTable
         this.dtPresenterProvider = dtPresenterProvider;
         this.updateRadarEvent = updateRadarEvent;
         this.pinnedEvent = pinnedEvent;
+        this.columnHeaderPopOver = columnHeaderPopOver;
 
         this.view.init( this );
 
@@ -289,17 +291,20 @@ public class GuidedDecisionTableModellerPresenter implements GuidedDecisionTable
     @Override
     public void enterPinnedMode( final GridWidget gridWidget,
                                  final Command onStartCommand ) {
+        columnHeaderPopOver.hide();
         view.getGridLayerView().enterPinnedMode( gridWidget,
                                                  onStartCommand );
     }
 
     @Override
     public void exitPinnedMode( final Command onCompleteCommand ) {
+        columnHeaderPopOver.hide();
         view.getGridLayerView().exitPinnedMode( onCompleteCommand );
     }
 
     @Override
     public void updatePinnedContext( final GridWidget gridWidget ) throws IllegalStateException {
+        columnHeaderPopOver.hide();
         view.getGridLayerView().updatePinnedContext( gridWidget );
     }
 

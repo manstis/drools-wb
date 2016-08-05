@@ -16,10 +16,8 @@
 
 package org.drools.workbench.screens.guided.dtable.client.widget.table.popovers;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import javax.enterprise.inject.Instance;
 
@@ -372,44 +370,7 @@ public class ColumnHeaderPopOverImplTest {
             }
         } );
 
-        return new Instance<ColumnDefinitionBuilder>() {
-
-            @Override
-            public Instance<ColumnDefinitionBuilder> select( final Annotation... annotations ) {
-                return null;
-            }
-
-            @Override
-            public <U extends ColumnDefinitionBuilder> Instance<U> select( final Class<U> aClass,
-                                                                           final Annotation... annotations ) {
-                return null;
-            }
-
-            @Override
-            public boolean isUnsatisfied() {
-                return false;
-            }
-
-            @Override
-            public boolean isAmbiguous() {
-                return false;
-            }
-
-            @Override
-            public void destroy( final ColumnDefinitionBuilder columnDefinitionBuilder ) {
-
-            }
-
-            @Override
-            public ColumnDefinitionBuilder get() {
-                return null;
-            }
-
-            @Override
-            public Iterator<ColumnDefinitionBuilder> iterator() {
-                return builders.iterator();
-            }
-        };
+        return new MockInstanceImpl<>( builders );
     }
 
 }

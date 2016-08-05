@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Set;
 import javax.enterprise.event.Event;
 
+import com.ait.lienzo.client.core.event.NodeMouseMoveHandler;
+import com.ait.lienzo.client.core.event.NodeMouseOutHandler;
 import com.ait.lienzo.client.core.types.Point2D;
 import com.ait.lienzo.test.LienzoMockitoTestRunner;
 import com.google.gwt.event.dom.client.ContextMenuHandler;
@@ -113,6 +115,8 @@ public class GuidedDecisionTableModellerPresenterTest {
 
     @Before
     public void setup() {
+        when( gridLayer.addNodeMouseMoveHandler( any( NodeMouseMoveHandler.class ) ) ).thenReturn( mock( HandlerRegistration.class ) );
+        when( gridLayer.addNodeMouseOutHandler( any( NodeMouseOutHandler.class ) ) ).thenReturn( mock( HandlerRegistration.class ) );
         when( view.addKeyDownHandler( any( KeyDownHandler.class ) ) ).thenReturn( mock( HandlerRegistration.class ) );
         when( view.addContextMenuHandler( any( ContextMenuHandler.class ) ) ).thenReturn( mock( HandlerRegistration.class ) );
         when( view.addMouseDownHandler( any( MouseDownHandler.class ) ) ).thenReturn( mock( HandlerRegistration.class ) );
@@ -400,6 +404,8 @@ public class GuidedDecisionTableModellerPresenterTest {
         verify( gridLayer,
                 times( 1 ) ).enterPinnedMode( eq( dtPresenter.getView() ),
                                               eq( command ) );
+        verify( columnHeaderPopOver,
+                times( 1 ) ).hide();
     }
 
     @Test
@@ -409,6 +415,8 @@ public class GuidedDecisionTableModellerPresenterTest {
 
         verify( gridLayer,
                 times( 1 ) ).exitPinnedMode( eq( command ) );
+        verify( columnHeaderPopOver,
+                times( 1 ) ).hide();
     }
 
     @Test
@@ -419,6 +427,8 @@ public class GuidedDecisionTableModellerPresenterTest {
 
         verify( gridLayer,
                 times( 1 ) ).updatePinnedContext( eq( dtPresenter.getView() ) );
+        verify( columnHeaderPopOver,
+                times( 1 ) ).hide();
     }
 
     @Test
