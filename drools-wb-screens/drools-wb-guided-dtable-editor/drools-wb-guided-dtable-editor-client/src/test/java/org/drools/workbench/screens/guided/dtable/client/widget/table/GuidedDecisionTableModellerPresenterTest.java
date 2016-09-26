@@ -180,7 +180,9 @@ public class GuidedDecisionTableModellerPresenterTest {
         presenter.addDecisionTable( path,
                                     placeRequest,
                                     dtContent,
-                                    false );
+                                    false,
+                                    null,
+                                    null );
 
         verify( presenter,
                 times( 1 ) ).updateLinks();

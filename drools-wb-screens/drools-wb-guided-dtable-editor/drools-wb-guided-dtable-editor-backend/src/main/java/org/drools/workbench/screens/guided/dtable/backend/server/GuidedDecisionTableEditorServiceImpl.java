@@ -16,8 +16,6 @@
 
 package org.drools.workbench.screens.guided.dtable.backend.server;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,7 +45,6 @@ import org.kie.workbench.common.services.backend.service.KieService;
 import org.kie.workbench.common.services.datamodel.backend.server.DataModelOracleUtilities;
 import org.kie.workbench.common.services.datamodel.backend.server.service.DataModelService;
 import org.kie.workbench.common.services.datamodel.model.PackageDataModelOracleBaselinePayload;
-import org.kie.workbench.common.services.shared.project.KieProject;
 import org.kie.workbench.common.services.shared.project.KieProjectService;
 import org.uberfire.backend.server.util.Paths;
 import org.uberfire.backend.vfs.Path;
@@ -55,9 +52,7 @@ import org.uberfire.ext.editor.commons.service.CopyService;
 import org.uberfire.ext.editor.commons.service.DeleteService;
 import org.uberfire.ext.editor.commons.service.RenameService;
 import org.uberfire.io.IOService;
-import org.uberfire.java.nio.file.DirectoryStream;
 import org.uberfire.java.nio.file.FileAlreadyExistsException;
-import org.uberfire.java.nio.file.Files;
 import org.uberfire.rpc.SessionInfo;
 import org.uberfire.workbench.events.ResourceOpenedEvent;
 
@@ -302,42 +297,6 @@ public class GuidedDecisionTableEditorServiceImpl
         } catch ( Exception e ) {
             throw ExceptionUtilities.handleException( e );
         }
-    }
-
-    @Override
-    public List<Path> listDecisionTablesInProject( final Path path ) {
-        try {
-            final KieProject project = projectService.resolveProject( path );
-            if ( project == null ) {
-                return Collections.emptyList();
-            }
-
-            final Path projectRoot = project.getRootPath();
-            final org.uberfire.java.nio.file.Path nioProjectRoot = Paths.convert( projectRoot );
-            final org.uberfire.java.nio.file.Path nioProjectResourcesRoot = nioProjectRoot.resolve( "src/main/resources" );
-
-            final List<Path> paths = findDecisionTables( nioProjectResourcesRoot );
-            return paths;
-
-        } catch ( Exception e ) {
-            throw ExceptionUtilities.handleException( e );
-        }
-    }
-
-    private List<Path> findDecisionTables( final org.uberfire.java.nio.file.Path nioRootPath ) {
-        final List<Path> paths = new ArrayList<>();
-        final DirectoryStream<org.uberfire.java.nio.file.Path> directoryStream = ioService.newDirectoryStream( nioRootPath );
-        for ( org.uberfire.java.nio.file.Path nioPath : directoryStream ) {
-            if ( Files.isDirectory( nioPath ) ) {
-                paths.addAll( findDecisionTables( nioPath ) );
-            } else {
-                final Path path = Paths.convert( nioPath );
-                if ( resourceType.accept( path ) ) {
-                    paths.add( path );
-                }
-            }
-        }
-        return paths;
     }
 
 }

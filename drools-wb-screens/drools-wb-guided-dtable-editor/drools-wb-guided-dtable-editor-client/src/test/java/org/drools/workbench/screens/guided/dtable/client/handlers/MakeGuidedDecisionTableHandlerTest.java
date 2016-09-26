@@ -23,7 +23,6 @@ import com.google.gwtmockito.GwtMockitoTestRunner;
 import org.drools.workbench.models.guided.dtable.shared.model.GuidedDecisionTable52;
 import org.drools.workbench.models.guided.dtable.shared.model.GuidedDecisionTable52.TableFormat;
 import org.drools.workbench.screens.guided.dtable.client.type.GuidedDTableResourceType;
-import org.drools.workbench.screens.guided.dtable.client.widget.table.events.cdi.AddDecisionTableToEditorEvent;
 import org.drools.workbench.screens.guided.dtable.client.wizard.NewGuidedDecisionTableWizard;
 import org.drools.workbench.screens.guided.dtable.service.GuidedDecisionTableEditorService;
 import org.guvnor.common.services.project.model.Package;
@@ -72,9 +71,6 @@ public class MakeGuidedDecisionTableHandlerTest {
     private EventSourceMock<NotificationEvent> mockNotificationEvent;
 
     @Mock
-    private EventSourceMock<AddDecisionTableToEditorEvent> addDecisionTableToEditorEvent;
-
-    @Mock
     private AsyncPackageDataModelOracleFactory oracleFactory;
 
     @Mock
@@ -101,9 +97,6 @@ public class MakeGuidedDecisionTableHandlerTest {
     @Captor
     private ArgumentCaptor<String> fileNameCaptor;
 
-    @Captor
-    private ArgumentCaptor<AddDecisionTableToEditorEvent> addDecisionTableToEditorEventCaptor;
-
     private NewGuidedDecisionTableHandler handler;
     private GuidedDTableResourceType resourceType = new GuidedDTableResourceType();
 
@@ -112,7 +105,6 @@ public class MakeGuidedDecisionTableHandlerTest {
         serviceCaller = new CallerMock<>( service );
         final NewGuidedDecisionTableHandler wrapped = new NewGuidedDecisionTableHandler( placeManager,
                                                                                          serviceCaller,
-                                                                                         addDecisionTableToEditorEvent,
                                                                                          resourceType,
                                                                                          options,
                                                                                          busyIndicatorView,
@@ -192,39 +184,6 @@ public class MakeGuidedDecisionTableHandlerTest {
 
         assertEquals( "default://project/src/main/resources/fileName.gdst",
                       pathCaptor.getValue().toURI() );
-    }
-
-    @Test
-    public void testCreate_OpenInEditor() {
-        final String fileName = "fileName";
-        final Package pkg = mock( Package.class );
-        final Path resourcesPath = PathFactory.newPath( "resources",
-                                                        "default://project/src/main/resources" );
-
-        when( pkg.getPackageMainResourcesPath() ).thenReturn( resourcesPath );
-        when( options.isUsingWizard() ).thenReturn( false );
-        when( options.isOpenInExistingEditor() ).thenReturn( true );
-
-        when( beanManager.lookupBean( ObservablePath.class ) ).thenReturn( observablePathBeanDef );
-        when( observablePathBeanDef.getInstance() ).thenReturn( observablePath );
-        when( observablePath.toURI() ).thenReturn( "default://project/src/main/resources/fileName.gdst" );
-
-        handler.create( pkg,
-                        fileName,
-                        newResourcePresenter );
-
-        verify( busyIndicatorView,
-                times( 1 ) ).hideBusyIndicator();
-        verify( newResourcePresenter,
-                times( 1 ) ).complete();
-        verify( mockNotificationEvent,
-                times( 1 ) ).fire( any( NotificationEvent.class ) );
-
-        verify( addDecisionTableToEditorEvent,
-                times( 1 ) ).fire( addDecisionTableToEditorEventCaptor.capture() );
-
-        assertEquals( "default://project/src/main/resources/fileName.gdst",
-                      addDecisionTableToEditorEventCaptor.getValue().getNewDecisionTablePath().toURI() );
     }
 
 }

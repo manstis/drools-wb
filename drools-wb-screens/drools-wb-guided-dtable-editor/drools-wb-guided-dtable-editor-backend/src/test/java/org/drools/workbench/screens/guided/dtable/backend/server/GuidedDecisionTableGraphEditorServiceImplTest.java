@@ -17,16 +17,21 @@
 package org.drools.workbench.screens.guided.dtable.backend.server;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.enterprise.event.Event;
 
+import org.drools.workbench.screens.guided.dtable.service.GuidedDecisionTableEditorService;
+import org.drools.workbench.screens.guided.dtable.service.GuidedDecisionTableGraphEditorService;
+import org.drools.workbench.screens.guided.dtable.service.GuidedDecisionTableLinkManager;
 import org.drools.workbench.screens.guided.dtable.type.GuidedDTableResourceTypeDefinition;
 import org.drools.workbench.screens.workitems.service.WorkItemsEditorService;
 import org.guvnor.common.services.backend.util.CommentedOptionFactory;
 import org.guvnor.common.services.backend.validation.GenericValidator;
 import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.kie.workbench.common.services.datamodel.backend.server.service.DataModelService;
 import org.kie.workbench.common.services.shared.project.KieProjectService;
@@ -34,21 +39,23 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.uberfire.backend.vfs.Path;
 import org.uberfire.backend.vfs.PathFactory;
+import org.uberfire.ext.editor.commons.backend.version.VersionRecordService;
 import org.uberfire.ext.editor.commons.service.CopyService;
 import org.uberfire.ext.editor.commons.service.DeleteService;
 import org.uberfire.ext.editor.commons.service.RenameService;
 import org.uberfire.io.IOService;
 import org.uberfire.java.nio.IOException;
 import org.uberfire.java.nio.file.DirectoryStream;
+import org.uberfire.java.nio.file.Paths;
 import org.uberfire.mocks.EventSourceMock;
 import org.uberfire.rpc.SessionInfo;
 import org.uberfire.workbench.events.ResourceOpenedEvent;
 
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-@Ignore("There are no tests for GuidedDTableGraphResourceTypeDefinition")
-public class GuidedDecisionTableEditorServiceImplTest {
+public class GuidedDecisionTableGraphEditorServiceImplTest {
 
     @Mock
     private IOService ioService;
@@ -72,6 +79,15 @@ public class GuidedDecisionTableEditorServiceImplTest {
     private KieProjectService projectService;
 
     @Mock
+    private VersionRecordService versionRecordService;
+
+    @Mock
+    private GuidedDecisionTableEditorService dtableService;
+
+    @Mock
+    private GuidedDecisionTableLinkManager dtableLinkManager;
+
+    @Mock
     private Event<ResourceOpenedEvent> resourceOpenedEvent = new EventSourceMock<>();
 
     @Mock
@@ -80,32 +96,32 @@ public class GuidedDecisionTableEditorServiceImplTest {
     @Mock
     private CommentedOptionFactory commentedOptionFactory;
 
-    private GuidedDTableResourceTypeDefinition resourceType = new GuidedDTableResourceTypeDefinition();
-
     @Mock
     private SessionInfo sessionInfo;
 
     @Mock
     private org.guvnor.common.services.project.model.Package pkg;
 
-    private GuidedDecisionTableEditorServiceImpl service;
+    private GuidedDecisionTableGraphEditorService service;
+
+    private GuidedDTableResourceTypeDefinition resourceType = new GuidedDTableResourceTypeDefinition();
 
     private final List<org.uberfire.java.nio.file.Path> resolvedPaths = new ArrayList<>();
 
     @Before
     public void setup() {
-        service = new GuidedDecisionTableEditorServiceImpl( ioService,
-                                                            copyService,
-                                                            deleteService,
-                                                            renameService,
-                                                            dataModelService,
-                                                            workItemsService,
-                                                            projectService,
-                                                            resourceOpenedEvent,
-                                                            genericValidator,
-                                                            commentedOptionFactory,
-                                                            resourceType,
-                                                            sessionInfo );
+        service = new GuidedDecisionTableGraphEditorServiceImpl( ioService,
+                                                                 copyService,
+                                                                 deleteService,
+                                                                 renameService,
+                                                                 projectService,
+                                                                 versionRecordService,
+                                                                 dtableService,
+                                                                 dtableLinkManager,
+                                                                 resourceOpenedEvent,
+                                                                 commentedOptionFactory,
+                                                                 resourceType,
+                                                                 sessionInfo );
 
         when( projectService.resolvePackage( any( Path.class ) ) ).thenReturn( pkg );
         when( pkg.getPackageMainResourcesPath() ).thenReturn( PathFactory.newPath( "project",
@@ -123,6 +139,34 @@ public class GuidedDecisionTableEditorServiceImplTest {
                 return resolvedPaths.iterator();
             }
         } );
+    }
+
+    @Test
+    public void testListDecisionTablesInPackage() {
+        final Path path = mock( Path.class );
+        when( path.toURI() ).thenReturn( "default://project/src/main/resources/dtable1.gdst" );
+
+        resolvedPaths.add( makeNioPath( "default://project/src/main/resources/dtable1.gdst" ) );
+        resolvedPaths.add( makeNioPath( "default://project/src/main/resources/dtable2.gdst" ) );
+        resolvedPaths.add( makeNioPath( "default://project/src/main/resources/dtable3.gdst" ) );
+        resolvedPaths.add( makeNioPath( "default://project/src/main/resources/pupa.smurf" ) );
+
+        final List<Path> paths = service.listDecisionTablesInPackage( path );
+
+        assertNotNull( paths );
+        assertEquals( 3,
+                      paths.size() );
+        final Set<String> fileNames = new HashSet<>();
+        for ( Path p : paths ) {
+            fileNames.add( p.getFileName() );
+        }
+        assertTrue( fileNames.contains( "dtable1.gdst" ) );
+        assertTrue( fileNames.contains( "dtable2.gdst" ) );
+        assertTrue( fileNames.contains( "dtable3.gdst" ) );
+    }
+
+    private org.uberfire.java.nio.file.Path makeNioPath( final String uri ) {
+        return Paths.get( uri );
     }
 
 }
