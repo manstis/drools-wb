@@ -37,6 +37,7 @@ import org.drools.workbench.screens.guided.dtable.client.editor.menu.ViewMenuBui
 import org.drools.workbench.screens.guided.dtable.client.type.GuidedDTableGraphResourceType;
 import org.drools.workbench.screens.guided.dtable.client.widget.table.GuidedDecisionTableModellerView;
 import org.drools.workbench.screens.guided.dtable.client.widget.table.GuidedDecisionTablePresenter;
+import org.drools.workbench.screens.guided.dtable.client.widget.table.GuidedDecisionTablePresenter.Access;
 import org.drools.workbench.screens.guided.dtable.client.widget.table.GuidedDecisionTableView;
 import org.drools.workbench.screens.guided.dtable.client.widget.table.events.cdi.DecisionTableSelectedEvent;
 import org.drools.workbench.screens.guided.dtable.model.GuidedDecisionTableEditorContent;
@@ -58,8 +59,11 @@ import org.uberfire.client.annotations.WorkbenchMenu;
 import org.uberfire.client.annotations.WorkbenchPartTitle;
 import org.uberfire.client.annotations.WorkbenchPartView;
 import org.uberfire.client.callbacks.Callback;
+import org.uberfire.client.mvp.LockManager;
+import org.uberfire.client.mvp.LockTarget;
 import org.uberfire.client.mvp.PlaceManager;
 import org.uberfire.client.mvp.SaveInProgressEvent;
+import org.uberfire.client.mvp.UpdatedLockStatusEvent;
 import org.uberfire.client.workbench.events.ChangeTitleWidgetEvent;
 import org.uberfire.ext.editor.commons.client.resources.i18n.CommonConstants;
 import org.uberfire.ext.editor.commons.version.events.RestoreEvent;
@@ -73,6 +77,7 @@ import org.uberfire.mvp.impl.PathPlaceRequest;
 import org.uberfire.workbench.events.NotificationEvent;
 import org.uberfire.workbench.model.menu.Menus;
 
+import static org.drools.workbench.screens.guided.dtable.client.widget.table.GuidedDecisionTablePresenter.Access.LockedBy.*;
 import static org.uberfire.client.annotations.WorkbenchEditor.LockingStrategy.*;
 import static org.uberfire.ext.widgets.common.client.common.ConcurrentChangePopup.*;
 
@@ -85,8 +90,9 @@ public class GuidedDecisionTableGraphEditorPresenter extends BaseGuidedDecisionT
 
     private final Caller<GuidedDecisionTableGraphEditorService> graphService;
     private final Event<SaveInProgressEvent> saveInProgressEvent;
+    private final Access access = new Access();
+    private final LockManager lockManager;
 
-    private boolean isReadOnly;
     private Integer originalGraphHash;
     private GuidedDecisionTableEditorGraphContent content;
     private ObservablePath.OnConcurrentUpdateEvent concurrentUpdateSessionInfo = null;
@@ -176,7 +182,8 @@ public class GuidedDecisionTableGraphEditorPresenter extends BaseGuidedDecisionT
                                                     final RadarMenuBuilder radarMenuBuilder,
                                                     final GuidedDecisionTableModellerView.Presenter modeller,
                                                     final SyncBeanManager beanManager,
-                                                    final PlaceManager placeManager ) {
+                                                    final PlaceManager placeManager,
+                                                    final LockManager lockManager ) {
         super( view,
                service,
                notification,
@@ -191,6 +198,7 @@ public class GuidedDecisionTableGraphEditorPresenter extends BaseGuidedDecisionT
                placeManager );
         this.graphService = graphService;
         this.saveInProgressEvent = saveInProgressEvent;
+        this.lockManager = lockManager;
     }
 
     @PostConstruct
@@ -218,6 +226,9 @@ public class GuidedDecisionTableGraphEditorPresenter extends BaseGuidedDecisionT
                            final PlaceRequest placeRequest ) {
         initialiseEditor( path,
                           placeRequest );
+
+        initialiseLockManager();
+
         addFileChangeListeners( path );
     }
 
@@ -225,9 +236,17 @@ public class GuidedDecisionTableGraphEditorPresenter extends BaseGuidedDecisionT
                                    final PlaceRequest placeRequest ) {
         this.editorPath = path;
         this.editorPlaceRequest = placeRequest;
-        this.isReadOnly = placeRequest.getParameter( "readOnly", null ) != null;
+        this.access.setReadOnly( placeRequest.getParameter( "readOnly", null ) != null );
         initialiseVersionManager();
         loadDocumentGraph( path );
+    }
+
+    private void initialiseLockManager() {
+        lockManager.init( new LockTarget( editorPath,
+                                          view.asWidget(),
+                                          editorPlaceRequest,
+                                          () -> editorPath.getFileName() + " - " + resourceType.getDescription(),
+                                          () -> {/*nothing*/} ) );
     }
 
     @Override
@@ -271,6 +290,7 @@ public class GuidedDecisionTableGraphEditorPresenter extends BaseGuidedDecisionT
     @Override
     @OnClose
     public void onClose() {
+        lockManager.releaseLock();
         super.onClose();
     }
 
@@ -299,7 +319,7 @@ public class GuidedDecisionTableGraphEditorPresenter extends BaseGuidedDecisionT
         final Double x = entry.getX();
         final Double y = entry.getY();
 
-        if ( isReadOnly ) {
+        if ( isReadOnly() ) {
             placeRequest.addParameter( "readOnly", "" );
         }
 
@@ -337,6 +357,10 @@ public class GuidedDecisionTableGraphEditorPresenter extends BaseGuidedDecisionT
     @Override
     protected void onDecisionTableSelected( final @Observes DecisionTableSelectedEvent event ) {
         super.onDecisionTableSelected( event );
+
+        if ( !isReadOnly() ) {
+            lockManager.acquireLock();
+        }
     }
 
     @Override
@@ -388,7 +412,7 @@ public class GuidedDecisionTableGraphEditorPresenter extends BaseGuidedDecisionT
 
     @Override
     protected void doSave() {
-        if ( isReadOnly ) {
+        if ( isReadOnly() ) {
             if ( versionRecordManager.isCurrentLatest() ) {
                 view.alertReadOnly();
                 return;
@@ -449,8 +473,8 @@ public class GuidedDecisionTableGraphEditorPresenter extends BaseGuidedDecisionT
                                    editorPath,
                                    ( versionRecord ) -> {
                                        versionRecordManager.setVersion( versionRecord.id() );
-                                       isReadOnly = !versionRecordManager.isLatest( versionRecord );
-                                       registeredDocumentsMenuBuilder.setReadOnly( isReadOnly );
+                                       access.setReadOnly( !versionRecordManager.isLatest( versionRecord ) );
+                                       registeredDocumentsMenuBuilder.setReadOnly( isReadOnly() );
                                        reload();
                                    } );
     }
@@ -519,6 +543,23 @@ public class GuidedDecisionTableGraphEditorPresenter extends BaseGuidedDecisionT
             initialiseEditor( versionRecordManager.getPathToLatest(),
                               editorPlaceRequest );
             notification.fire( new NotificationEvent( CommonConstants.INSTANCE.ItemRestored() ) );
+        }
+    }
+
+    private boolean isReadOnly() {
+        return !this.access.isEditable();
+    }
+
+    void onUpdatedLockStatusEvent( final @Observes UpdatedLockStatusEvent event ) {
+        if ( editorPath == null ) {
+            return;
+        }
+        if ( editorPath.equals( event.getFile() ) ) {
+            if ( event.isLocked() ) {
+                access.setLock( event.isLockedByCurrentUser() ? CURRENT_USER : OTHER_USER );
+            } else {
+                access.setLock( NOBODY );
+            }
         }
     }
 
