@@ -16,6 +16,8 @@
 
 package org.drools.workbench.screens.guided.dtable.service;
 
+import javax.xml.namespace.QName;
+
 import org.drools.workbench.models.guided.dtable.shared.model.GuidedDecisionTable52;
 import org.drools.workbench.screens.guided.dtable.model.GuidedDecisionTableEditorContent;
 import org.guvnor.common.services.shared.file.SupportsUpdate;
@@ -47,5 +49,7 @@ public interface GuidedDecisionTableEditorService
     GuidedDecisionTableEditorContent loadContent( final Path path );
 
     PackageDataModelOracleBaselinePayload loadDataModel( final Path path );
+
+    QName getQName();
 
 }

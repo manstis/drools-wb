@@ -23,6 +23,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.xml.namespace.QName;
 
 import org.drools.workbench.models.datamodel.oracle.PackageDataModelOracle;
 import org.drools.workbench.models.datamodel.workitems.PortableWorkDefinition;
@@ -77,6 +78,11 @@ public class GuidedDecisionTableEditorServiceImpl
 
     public GuidedDecisionTableEditorServiceImpl() {
         //Zero parameter constructor for CDI
+    }
+
+    @Override
+    public QName getQName() {
+        return null;
     }
 
     @Inject
