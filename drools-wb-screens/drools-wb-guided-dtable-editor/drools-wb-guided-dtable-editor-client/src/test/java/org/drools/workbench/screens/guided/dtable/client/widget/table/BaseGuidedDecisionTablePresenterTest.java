@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.enterprise.event.Event;
+import javax.xml.namespace.QName;
 
 import org.drools.workbench.models.datamodel.workitems.PortableWorkDefinition;
 import org.drools.workbench.models.guided.dtable.shared.model.BaseColumn;
@@ -357,7 +358,8 @@ public abstract class BaseGuidedDecisionTablePresenterTest {
         dtContent = new GuidedDecisionTableEditorContent( model,
                                                           workItemDefinitions,
                                                           overview,
-                                                          dmoBaseline );
+                                                          dmoBaseline,
+                                                          new QName( "localhost" ) );
 
         when( oracleFactory.makeAsyncPackageDataModelOracle( any( Path.class ),
                                                              any( GuidedDecisionTable52.class ),

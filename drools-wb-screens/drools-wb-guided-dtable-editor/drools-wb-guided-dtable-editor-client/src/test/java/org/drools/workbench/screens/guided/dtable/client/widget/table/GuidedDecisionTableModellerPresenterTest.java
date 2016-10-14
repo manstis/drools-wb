@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.enterprise.event.Event;
+import javax.xml.namespace.QName;
 
 import com.ait.lienzo.client.core.event.NodeMouseMoveHandler;
 import com.ait.lienzo.client.core.event.NodeMouseOutHandler;
@@ -155,7 +156,8 @@ public class GuidedDecisionTableModellerPresenterTest {
         final GuidedDecisionTableEditorContent dtContent = new GuidedDecisionTableEditorContent( model,
                                                                                                  workItemDefinitions,
                                                                                                  overview,
-                                                                                                 dmoBaseline );
+                                                                                                 dmoBaseline,
+                                                                                                 new QName( "localhost" ) );
         return dtContent;
     }
 

@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.xml.namespace.QName;
+
 import com.ait.lienzo.client.core.shape.Layer;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwtmockito.GwtMockitoTestRunner;
@@ -184,7 +186,8 @@ public class GuidedDecisionTablePresenter_AuditLogTest {
         dtContent = new GuidedDecisionTableEditorContent( model,
                                                           workItemDefinitions,
                                                           overview,
-                                                          dmoBaseline );
+                                                          dmoBaseline,
+                                                          new QName( "localhost" ) );
 
         when( oracleFactory.makeAsyncPackageDataModelOracle( any( Path.class ),
                                                              any( GuidedDecisionTable52.class ),

@@ -82,7 +82,7 @@ public class GuidedDecisionTableEditorServiceImpl
 
     @Override
     public QName getQName() {
-        return null;
+        return new QName( "localhost"  );
     }
 
     @Inject
@@ -184,7 +184,8 @@ public class GuidedDecisionTableEditorServiceImpl
         return new GuidedDecisionTableEditorContent( model,
                                                      workItemDefinitions,
                                                      overview,
-                                                     dataModel );
+                                                     dataModel,
+                                                     new QName( "localhost" ));
     }
 
     @Override

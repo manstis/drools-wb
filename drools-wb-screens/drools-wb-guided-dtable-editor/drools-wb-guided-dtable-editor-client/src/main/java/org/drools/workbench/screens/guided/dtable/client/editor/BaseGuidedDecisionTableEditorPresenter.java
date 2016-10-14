@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import javax.enterprise.event.Event;
 
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.RequiresResize;
@@ -184,6 +185,8 @@ public abstract class BaseGuidedDecisionTableEditorPresenter extends KieMultiple
                                                                                              placeRequest.getParameter( "readOnly", null ) != null,
                                                                                              null,
                                                                                              null );
+            Window.alert( content.getQname().toString() );
+
             registerDocument( dtPresenter );
             activateDocument( dtPresenter );
 

@@ -18,6 +18,8 @@ package org.drools.workbench.screens.guided.dtable.model;
 
 import java.util.Set;
 
+import javax.xml.namespace.QName;
+
 import org.drools.workbench.models.datamodel.workitems.PortableWorkDefinition;
 import org.drools.workbench.models.guided.dtable.shared.model.GuidedDecisionTable52;
 import org.guvnor.common.services.shared.metadata.model.Overview;
@@ -32,6 +34,7 @@ public class GuidedDecisionTableEditorContent {
     private Set<PortableWorkDefinition> workItemDefinitions;
     private PackageDataModelOracleBaselinePayload dataModel;
     private Overview overview;
+    private QName qname;
 
     public GuidedDecisionTableEditorContent() {
     }
@@ -39,7 +42,8 @@ public class GuidedDecisionTableEditorContent {
     public GuidedDecisionTableEditorContent( final GuidedDecisionTable52 model,
                                              final Set<PortableWorkDefinition> workItemDefinitions,
                                              final Overview overview,
-                                             final PackageDataModelOracleBaselinePayload dataModel ) {
+                                             final PackageDataModelOracleBaselinePayload dataModel,
+                                             final QName qname) {
         this.overview = PortablePreconditions.checkNotNull( "overview",
                                                             overview );
         this.model = PortablePreconditions.checkNotNull( "model",
@@ -48,6 +52,7 @@ public class GuidedDecisionTableEditorContent {
                                                                        workItemDefinitions );
         this.dataModel = PortablePreconditions.checkNotNull( "dataModel",
                                                              dataModel );
+        this.qname=qname;
     }
 
     public GuidedDecisionTable52 getModel() {
@@ -68,5 +73,9 @@ public class GuidedDecisionTableEditorContent {
 
     public void setOverview(Overview overview) {
         this.overview = overview;
+    }
+
+    public QName getQname() {
+        return qname;
     }
 }
