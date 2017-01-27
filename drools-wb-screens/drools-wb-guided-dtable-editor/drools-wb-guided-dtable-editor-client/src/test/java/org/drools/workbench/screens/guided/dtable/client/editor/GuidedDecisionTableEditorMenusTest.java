@@ -22,7 +22,6 @@ import javax.enterprise.event.Event;
 import com.google.gwtmockito.GwtMockitoTestRunner;
 import org.drools.workbench.screens.guided.dtable.client.editor.clipboard.Clipboard;
 import org.drools.workbench.screens.guided.dtable.client.editor.menu.EditMenuBuilder;
-import org.drools.workbench.screens.guided.dtable.client.editor.menu.EditMenuView;
 import org.drools.workbench.screens.guided.dtable.client.editor.menu.InsertMenuBuilder;
 import org.drools.workbench.screens.guided.dtable.client.editor.menu.InsertMenuView;
 import org.drools.workbench.screens.guided.dtable.client.editor.menu.RadarMenuBuilder;
@@ -37,6 +36,7 @@ import org.guvnor.common.services.project.context.ProjectContext;
 import org.jboss.errai.common.client.api.Caller;
 import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ui.client.local.spi.TranslationService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -108,9 +108,9 @@ public class GuidedDecisionTableEditorMenusTest {
     protected Clipboard clipboard;
 
     @Mock
-    protected EditMenuView editMenuView;
-    protected EditMenuBuilder editMenuBuilder = new EditMenuBuilder(editMenuView,
-                                                                    clipboard);
+    protected TranslationService ts;
+
+    protected EditMenuBuilder editMenuBuilder;
 
     @Mock
     protected ViewMenuView viewMenuView;
@@ -210,8 +210,17 @@ public class GuidedDecisionTableEditorMenusTest {
 
     @Before
     public void setup() {
+        when(modeller.getView()).thenReturn(modellerView);
+        when(versionRecordManager.newSaveMenuItem(any(Command.class))).thenReturn(saveMenuItem);
+        when(versionRecordManager.buildMenu()).thenReturn(versionManagerMenuItem);
+        when(ts.getTranslation(any(String.class))).thenAnswer(invocation -> invocation.getArguments()[0]);
+
         this.dtServiceCaller = new CallerMock<>(dtService);
         this.versionServiceCaller = new CallerMock<>(versionService);
+
+        this.editMenuBuilder = new EditMenuBuilder(clipboard,
+                                                   ts);
+        this.editMenuBuilder.setup();
 
         final GuidedDecisionTableEditorPresenter wrapped = new GuidedDecisionTableEditorPresenter(view,
                                                                                                   dtServiceCaller,
@@ -239,10 +248,6 @@ public class GuidedDecisionTableEditorMenusTest {
         wrapped.setFileNameValidator(fileNameValidator);
 
         this.presenter = spy(wrapped);
-
-        when(modeller.getView()).thenReturn(modellerView);
-        when(versionRecordManager.newSaveMenuItem(any(Command.class))).thenReturn(saveMenuItem);
-        when(versionRecordManager.buildMenu()).thenReturn(versionManagerMenuItem);
 
         presenter.init();
         presenter.setupMenuBar();

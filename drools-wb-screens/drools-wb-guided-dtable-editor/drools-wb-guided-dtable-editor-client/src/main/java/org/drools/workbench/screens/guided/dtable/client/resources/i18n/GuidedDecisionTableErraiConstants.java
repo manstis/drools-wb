@@ -26,4 +26,27 @@ public class GuidedDecisionTableErraiConstants {
     @TranslationKey(defaultValue = "")
     public static final String PopOverViewImpl_Title = "PopOverViewImpl.title";
 
+    @TranslationKey(defaultValue = "")
+    public static final String EditMenuViewImpl_title = "EditMenuViewImpl.title";
+
+    @TranslationKey(defaultValue = "")
+    public static final String EditMenuViewImpl_cut = "EditMenuViewImpl.cut";
+
+    @TranslationKey(defaultValue = "")
+    public static final String EditMenuViewImpl_copy = "EditMenuViewImpl.copy";
+
+    @TranslationKey(defaultValue = "")
+    public static final String EditMenuViewImpl_paste = "EditMenuViewImpl.paste";
+
+    @TranslationKey(defaultValue = "")
+    public static final String EditMenuViewImpl_deleteCells = "EditMenuViewImpl.deleteCells";
+
+    @TranslationKey(defaultValue = "")
+    public static final String EditMenuViewImpl_deleteColumns = "EditMenuViewImpl.deleteColumns";
+
+    @TranslationKey(defaultValue = "")
+    public static final String EditMenuViewImpl_deleteRows = "EditMenuViewImpl.deleteRows";
+
+    @TranslationKey(defaultValue = "")
+    public static final String EditMenuViewImpl_otherwise = "EditMenuViewImpl.otherwise";
 }

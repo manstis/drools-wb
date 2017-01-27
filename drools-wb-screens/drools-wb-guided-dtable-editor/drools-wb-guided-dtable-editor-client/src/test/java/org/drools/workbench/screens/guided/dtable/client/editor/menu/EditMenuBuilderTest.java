@@ -33,6 +33,7 @@ import org.drools.workbench.screens.guided.dtable.client.widget.table.events.cdi
 import org.drools.workbench.screens.guided.dtable.client.widget.table.events.cdi.DecisionTableSelectionsChangedEvent;
 import org.drools.workbench.screens.guided.dtable.client.widget.table.model.GuidedDecisionTableUiModel;
 import org.drools.workbench.screens.guided.dtable.client.widget.table.model.synchronizers.ModelSynchronizer;
+import org.jboss.errai.ui.client.local.spi.TranslationService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,6 +44,7 @@ import org.uberfire.ext.wires.core.grids.client.model.impl.BaseGridColumn;
 import org.uberfire.ext.wires.core.grids.client.model.impl.BaseGridRow;
 import org.uberfire.ext.wires.core.grids.client.widget.grid.renderers.columns.GridColumnRenderer;
 
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -54,7 +56,7 @@ public class EditMenuBuilderTest {
     private Clipboard clipboard;
 
     @Mock
-    private EditMenuView view;
+    private TranslationService ts;
 
     @Mock
     private GuidedDecisionTableView.Presenter dtPresenter;
@@ -67,391 +69,322 @@ public class EditMenuBuilderTest {
     @SuppressWarnings("unchecked")
     public void setup() {
         model = new GuidedDecisionTable52();
-        uiModel = new GuidedDecisionTableUiModel( mock( ModelSynchronizer.class ) );
+        uiModel = new GuidedDecisionTableUiModel(mock(ModelSynchronizer.class));
         clipboard = new DefaultClipboard();
 
-        when( dtPresenter.getView() ).thenReturn( dtPresenterView );
-        when( dtPresenter.getModel() ).thenReturn( model );
-        when( dtPresenter.getAccess() ).thenReturn( access );
-        when( dtPresenterView.getModel() ).thenReturn( uiModel );
+        when(dtPresenter.getView()).thenReturn(dtPresenterView);
+        when(dtPresenter.getModel()).thenReturn(model);
+        when(dtPresenter.getAccess()).thenReturn(access);
+        when(dtPresenterView.getModel()).thenReturn(uiModel);
+        when(ts.getTranslation(any(String.class))).thenReturn("i18n");
 
-        uiModel.appendColumn( new BaseGridColumn<String>( mock( GridColumn.HeaderMetaData.class ),
-                                                          mock( GridColumnRenderer.class ),
-                                                          100 ) );
-        uiModel.appendColumn( new BaseGridColumn<String>( mock( GridColumn.HeaderMetaData.class ),
-                                                          mock( GridColumnRenderer.class ),
-                                                          100 ) );
-        uiModel.appendColumn( new BaseGridColumn<String>( mock( GridColumn.HeaderMetaData.class ),
-                                                          mock( GridColumnRenderer.class ),
-                                                          100 ) );
-        uiModel.appendRow( new BaseGridRow() );
+        uiModel.appendColumn(new BaseGridColumn<String>(mock(GridColumn.HeaderMetaData.class),
+                                                        mock(GridColumnRenderer.class),
+                                                        100));
+        uiModel.appendColumn(new BaseGridColumn<String>(mock(GridColumn.HeaderMetaData.class),
+                                                        mock(GridColumnRenderer.class),
+                                                        100));
+        uiModel.appendColumn(new BaseGridColumn<String>(mock(GridColumn.HeaderMetaData.class),
+                                                        mock(GridColumnRenderer.class),
+                                                        100));
+        uiModel.appendRow(new BaseGridRow());
 
-        builder = new EditMenuBuilder( view,
-                                       clipboard );
+        builder = new EditMenuBuilder(clipboard,
+                                      ts);
         builder.setup();
     }
 
     @Test
     public void testOnDecisionTableSelectedEventWithNoSelections() {
-        builder.onDecisionTableSelectedEvent( new DecisionTableSelectedEvent( dtPresenter ) );
+        builder.onDecisionTableSelectedEvent(new DecisionTableSelectedEvent(dtPresenter));
 
-        verify( view,
-                times( 1 ) ).enableCutMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableCopyMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enablePasteMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableDeleteCellMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableDeleteColumnMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableDeleteRowMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableOtherwiseCellMenuItem( eq( false ) );
+        assertFalse(builder.miCut.isEnabled());
+        assertFalse(builder.miCopy.isEnabled());
+        assertFalse(builder.miPaste.isEnabled());
+        assertFalse(builder.miDeleteSelectedCells.isEnabled());
+        assertFalse(builder.miDeleteSelectedColumns.isEnabled());
+        assertFalse(builder.miDeleteSelectedRows.isEnabled());
+        assertFalse(builder.miOtherwiseCell.isEnabled());
     }
 
     @Test
     public void testOnDecisionTableSelectedEventWithNonOtherwiseColumnSelected() {
-        model.getMetadataCols().add( new MetadataCol52() );
-        model.getData().add( new ArrayList<DTCellValue52>() {{
-            add( new DTCellValue52( 1 ) );
-            add( new DTCellValue52( "descr" ) );
-            add( new DTCellValue52( "md" ) );
-        }} );
+        model.getMetadataCols().add(new MetadataCol52());
+        model.getData().add(new ArrayList<DTCellValue52>() {{
+            add(new DTCellValue52(1));
+            add(new DTCellValue52("descr"));
+            add(new DTCellValue52("md"));
+        }});
 
-        uiModel.selectCell( 0,
-                            2 );
+        uiModel.selectCell(0,
+                           2);
 
-        builder.onDecisionTableSelectedEvent( new DecisionTableSelectedEvent( dtPresenter ) );
+        builder.onDecisionTableSelectedEvent(new DecisionTableSelectedEvent(dtPresenter));
 
-        verify( view,
-                times( 1 ) ).enableCutMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableCopyMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enablePasteMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableDeleteCellMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableDeleteColumnMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableDeleteRowMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableOtherwiseCellMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).setOtherwiseCell( eq( false ) );
+        assertTrue(builder.miCut.isEnabled());
+        assertTrue(builder.miCopy.isEnabled());
+        assertFalse(builder.miPaste.isEnabled());
+        assertTrue(builder.miDeleteSelectedCells.isEnabled());
+        assertTrue(builder.miDeleteSelectedColumns.isEnabled());
+        assertTrue(builder.miDeleteSelectedRows.isEnabled());
+        assertFalse(builder.miOtherwiseCell.isEnabled());
+// TODO {manstis} miOtherwiseCell needs to be a Custom Widget to handle a check-mark
+//        verify( builder.miOtherwiseCell,
+//                times( 1 ) ).setOtherwise( eq( false ) );
     }
 
     @Test
     public void testOnDecisionTableSelectedEventWithOtherwiseColumnSelected() {
-        model.getConditions().add( new Pattern52() {{
-            setFactType( "Fact" );
-            getChildColumns().add( new ConditionCol52() {{
-                setFactType( "Fact" );
-                setFactField( "field1" );
-                setFieldType( DataType.TYPE_STRING );
-                setOperator( "==" );
-            }} );
-        }} );
-        model.getData().add( new ArrayList<DTCellValue52>() {{
-            add( new DTCellValue52( 1 ) );
-            add( new DTCellValue52( "descr" ) );
-            add( new DTCellValue52( "md" ) );
-        }} );
+        model.getConditions().add(new Pattern52() {{
+            setFactType("Fact");
+            getChildColumns().add(new ConditionCol52() {{
+                setFactType("Fact");
+                setFactField("field1");
+                setFieldType(DataType.TYPE_STRING);
+                setOperator("==");
+            }});
+        }});
+        model.getData().add(new ArrayList<DTCellValue52>() {{
+            add(new DTCellValue52(1));
+            add(new DTCellValue52("descr"));
+            add(new DTCellValue52("md"));
+        }});
 
-        uiModel.selectCell( 0,
-                            2 );
+        uiModel.selectCell(0,
+                           2);
 
-        builder.onDecisionTableSelectedEvent( new DecisionTableSelectedEvent( dtPresenter ) );
+        builder.onDecisionTableSelectedEvent(new DecisionTableSelectedEvent(dtPresenter));
 
-        verify( view,
-                times( 1 ) ).enableCutMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableCopyMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enablePasteMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableDeleteCellMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableDeleteColumnMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableDeleteRowMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableOtherwiseCellMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).setOtherwiseCell( eq( false ) );
+        assertTrue(builder.miCut.isEnabled());
+        assertTrue(builder.miCopy.isEnabled());
+        assertFalse(builder.miPaste.isEnabled());
+        assertTrue(builder.miDeleteSelectedCells.isEnabled());
+        assertTrue(builder.miDeleteSelectedColumns.isEnabled());
+        assertTrue(builder.miDeleteSelectedRows.isEnabled());
+        assertTrue(builder.miOtherwiseCell.isEnabled());
+// TODO {manstis} miOtherwiseCell needs to be a Custom Widget to handle a check-mark
+//        verify( builder.miOtherwiseCell,
+//                times( 1 ) ).setOtherwiseCell( eq( false ) );
     }
 
     @Test
     public void testOnDecisionTableSelectedEventWithOtherwiseCellSelected() {
-        model.getConditions().add( new Pattern52() {{
-            setFactType( "Fact" );
-            getChildColumns().add( new ConditionCol52() {{
-                setFactType( "Fact" );
-                setFactField( "field1" );
-                setFieldType( DataType.TYPE_STRING );
-                setOperator( "==" );
-            }} );
-        }} );
-        model.getData().add( new ArrayList<DTCellValue52>() {{
-            add( new DTCellValue52( 1 ) );
-            add( new DTCellValue52( "descr" ) );
-            add( new DTCellValue52() {{
-                setOtherwise( true );
-            }} );
-        }} );
+        model.getConditions().add(new Pattern52() {{
+            setFactType("Fact");
+            getChildColumns().add(new ConditionCol52() {{
+                setFactType("Fact");
+                setFactField("field1");
+                setFieldType(DataType.TYPE_STRING);
+                setOperator("==");
+            }});
+        }});
+        model.getData().add(new ArrayList<DTCellValue52>() {{
+            add(new DTCellValue52(1));
+            add(new DTCellValue52("descr"));
+            add(new DTCellValue52() {{
+                setOtherwise(true);
+            }});
+        }});
 
-        uiModel.selectCell( 0,
-                            2 );
+        uiModel.selectCell(0,
+                           2);
 
-        builder.onDecisionTableSelectedEvent( new DecisionTableSelectedEvent( dtPresenter ) );
+        builder.onDecisionTableSelectedEvent(new DecisionTableSelectedEvent(dtPresenter));
 
-        verify( view,
-                times( 1 ) ).enableCutMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableCopyMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enablePasteMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableDeleteCellMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableDeleteColumnMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableDeleteRowMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableOtherwiseCellMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).setOtherwiseCell( eq( true ) );
+        assertTrue(builder.miCut.isEnabled());
+        assertTrue(builder.miCopy.isEnabled());
+        assertFalse(builder.miPaste.isEnabled());
+        assertTrue(builder.miDeleteSelectedCells.isEnabled());
+        assertTrue(builder.miDeleteSelectedColumns.isEnabled());
+        assertTrue(builder.miDeleteSelectedRows.isEnabled());
+        assertTrue(builder.miOtherwiseCell.isEnabled());
+// TODO {manstis} miOtherwiseCell needs to be a Custom Widget to handle a check-mark
+//        verify( builder.miOtherwiseCell,
+//                times( 1 ) ).setOtherwiseCell( eq( true ) );
     }
 
     @Test
     public void testOnDecisionTableSelectedEventWithSelectionsWithClipboardPopulated() {
-        model.getMetadataCols().add( new MetadataCol52() );
-        model.getData().add( new ArrayList<DTCellValue52>() {{
-            add( new DTCellValue52( 1 ) );
-            add( new DTCellValue52( "descr" ) );
-            add( new DTCellValue52( "md" ) );
-        }} );
+        model.getMetadataCols().add(new MetadataCol52());
+        model.getData().add(new ArrayList<DTCellValue52>() {{
+            add(new DTCellValue52(1));
+            add(new DTCellValue52("descr"));
+            add(new DTCellValue52("md"));
+        }});
 
-        uiModel.selectCell( 0,
-                            2 );
-        clipboard.setData( new HashSet<Clipboard.ClipboardData>() {{
-            add( new DefaultClipboard.ClipboardDataImpl( 0,
-                                                         2,
-                                                         model.getData().get( 0 ).get( 2 ) ) );
-        }} );
+        uiModel.selectCell(0,
+                           2);
+        clipboard.setData(new HashSet<Clipboard.ClipboardData>() {{
+            add(new DefaultClipboard.ClipboardDataImpl(0,
+                                                       2,
+                                                       model.getData().get(0).get(2)));
+        }});
 
-        builder.onDecisionTableSelectedEvent( new DecisionTableSelectedEvent( dtPresenter ) );
+        builder.onDecisionTableSelectedEvent(new DecisionTableSelectedEvent(dtPresenter));
 
-        verify( view,
-                times( 1 ) ).enableCutMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableCopyMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enablePasteMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableDeleteCellMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableDeleteColumnMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableDeleteRowMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableOtherwiseCellMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).setOtherwiseCell( eq( false ) );
+        assertTrue(builder.miCut.isEnabled());
+        assertTrue(builder.miCopy.isEnabled());
+        assertTrue(builder.miPaste.isEnabled());
+        assertTrue(builder.miDeleteSelectedCells.isEnabled());
+        assertTrue(builder.miDeleteSelectedColumns.isEnabled());
+        assertTrue(builder.miDeleteSelectedRows.isEnabled());
+        assertFalse(builder.miOtherwiseCell.isEnabled());
+// TODO {manstis} miOtherwiseCell needs to be a Custom Widget to handle a check-mark
+//        verify( builder.miOtherwiseCell,
+//                times( 1 ) ).setOtherwiseCell( eq( false ) );
     }
 
     @Test
     public void testOnDecisionTableSelectionsChangedEventWithNoSelections() {
-        builder.onDecisionTableSelectionsChangedEvent( new DecisionTableSelectionsChangedEvent( dtPresenter ) );
+        builder.onDecisionTableSelectionsChangedEvent(new DecisionTableSelectionsChangedEvent(dtPresenter));
 
-        verify( view,
-                times( 1 ) ).enableCutMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableCopyMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enablePasteMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableDeleteCellMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableDeleteColumnMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableDeleteRowMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableOtherwiseCellMenuItem( eq( false ) );
+        assertFalse(builder.miCut.isEnabled());
+        assertFalse(builder.miCopy.isEnabled());
+        assertFalse(builder.miPaste.isEnabled());
+        assertFalse(builder.miDeleteSelectedCells.isEnabled());
+        assertFalse(builder.miDeleteSelectedColumns.isEnabled());
+        assertFalse(builder.miDeleteSelectedRows.isEnabled());
+        assertFalse(builder.miOtherwiseCell.isEnabled());
     }
 
     @Test
     public void testOnDecisionTableSelectionsChangedEventWithNonOtherwiseColumnSelected() {
-        model.getMetadataCols().add( new MetadataCol52() );
-        model.getData().add( new ArrayList<DTCellValue52>() {{
-            add( new DTCellValue52( 1 ) );
-            add( new DTCellValue52( "descr" ) );
-            add( new DTCellValue52( "md" ) );
-        }} );
+        model.getMetadataCols().add(new MetadataCol52());
+        model.getData().add(new ArrayList<DTCellValue52>() {{
+            add(new DTCellValue52(1));
+            add(new DTCellValue52("descr"));
+            add(new DTCellValue52("md"));
+        }});
 
-        uiModel.selectCell( 0,
-                            2 );
+        uiModel.selectCell(0,
+                           2);
 
-        builder.onDecisionTableSelectionsChangedEvent( new DecisionTableSelectionsChangedEvent( dtPresenter ) );
+        builder.onDecisionTableSelectionsChangedEvent(new DecisionTableSelectionsChangedEvent(dtPresenter));
 
-        verify( view,
-                times( 1 ) ).enableCutMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableCopyMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enablePasteMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableDeleteCellMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableDeleteColumnMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableDeleteRowMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableOtherwiseCellMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).setOtherwiseCell( eq( false ) );
+        assertTrue(builder.miCut.isEnabled());
+        assertTrue(builder.miCopy.isEnabled());
+        assertFalse(builder.miPaste.isEnabled());
+        assertTrue(builder.miDeleteSelectedCells.isEnabled());
+        assertTrue(builder.miDeleteSelectedColumns.isEnabled());
+        assertTrue(builder.miDeleteSelectedRows.isEnabled());
+        assertFalse(builder.miOtherwiseCell.isEnabled());
+// TODO {manstis} miOtherwiseCell needs to be a Custom Widget to handle a check-mark
+//        verify( builder.miOtherwiseCell,
+//                times( 1 ) ).setOtherwiseCell( eq( false ) );
     }
 
     @Test
     public void testOnDecisionTableSelectionsChangedEventWithOtherwiseColumnSelected() {
-        model.getConditions().add( new Pattern52() {{
-            setFactType( "Fact" );
-            getChildColumns().add( new ConditionCol52() {{
-                setFactType( "Fact" );
-                setFactField( "field1" );
-                setFieldType( DataType.TYPE_STRING );
-                setOperator( "==" );
-            }} );
-        }} );
-        model.getData().add( new ArrayList<DTCellValue52>() {{
-            add( new DTCellValue52( 1 ) );
-            add( new DTCellValue52( "descr" ) );
-            add( new DTCellValue52( "md" ) );
-        }} );
+        model.getConditions().add(new Pattern52() {{
+            setFactType("Fact");
+            getChildColumns().add(new ConditionCol52() {{
+                setFactType("Fact");
+                setFactField("field1");
+                setFieldType(DataType.TYPE_STRING);
+                setOperator("==");
+            }});
+        }});
+        model.getData().add(new ArrayList<DTCellValue52>() {{
+            add(new DTCellValue52(1));
+            add(new DTCellValue52("descr"));
+            add(new DTCellValue52("md"));
+        }});
 
-        uiModel.selectCell( 0,
-                            2 );
+        uiModel.selectCell(0,
+                           2);
 
-        builder.onDecisionTableSelectionsChangedEvent( new DecisionTableSelectionsChangedEvent( dtPresenter ) );
+        builder.onDecisionTableSelectionsChangedEvent(new DecisionTableSelectionsChangedEvent(dtPresenter));
 
-        verify( view,
-                times( 1 ) ).enableCutMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableCopyMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enablePasteMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableDeleteCellMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableDeleteColumnMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableDeleteRowMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableOtherwiseCellMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).setOtherwiseCell( eq( false ) );
+        assertTrue(builder.miCut.isEnabled());
+        assertTrue(builder.miCopy.isEnabled());
+        assertFalse(builder.miPaste.isEnabled());
+        assertTrue(builder.miDeleteSelectedCells.isEnabled());
+        assertTrue(builder.miDeleteSelectedColumns.isEnabled());
+        assertTrue(builder.miDeleteSelectedRows.isEnabled());
+        assertTrue(builder.miOtherwiseCell.isEnabled());
+// TODO {manstis} miOtherwiseCell needs to be a Custom Widget to handle a check-mark
+//        verify( builder.miOtherwiseCell,
+//                times( 1 ) ).setOtherwiseCell( eq( false ) );
     }
 
     @Test
     public void testOnDecisionTableSelectionsChangedEventWithOtherwiseCellSelected() {
-        model.getConditions().add( new Pattern52() {{
-            setFactType( "Fact" );
-            getChildColumns().add( new ConditionCol52() {{
-                setFactType( "Fact" );
-                setFactField( "field1" );
-                setFieldType( DataType.TYPE_STRING );
-                setOperator( "==" );
-            }} );
-        }} );
-        model.getData().add( new ArrayList<DTCellValue52>() {{
-            add( new DTCellValue52( 1 ) );
-            add( new DTCellValue52( "descr" ) );
-            add( new DTCellValue52() {{
-                setOtherwise( true );
-            }} );
-        }} );
+        model.getConditions().add(new Pattern52() {{
+            setFactType("Fact");
+            getChildColumns().add(new ConditionCol52() {{
+                setFactType("Fact");
+                setFactField("field1");
+                setFieldType(DataType.TYPE_STRING);
+                setOperator("==");
+            }});
+        }});
+        model.getData().add(new ArrayList<DTCellValue52>() {{
+            add(new DTCellValue52(1));
+            add(new DTCellValue52("descr"));
+            add(new DTCellValue52() {{
+                setOtherwise(true);
+            }});
+        }});
 
-        uiModel.selectCell( 0,
-                            2 );
+        uiModel.selectCell(0,
+                           2);
 
-        builder.onDecisionTableSelectionsChangedEvent( new DecisionTableSelectionsChangedEvent( dtPresenter ) );
+        builder.onDecisionTableSelectionsChangedEvent(new DecisionTableSelectionsChangedEvent(dtPresenter));
 
-        verify( view,
-                times( 1 ) ).enableCutMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableCopyMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enablePasteMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableDeleteCellMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableDeleteColumnMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableDeleteRowMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableOtherwiseCellMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).setOtherwiseCell( eq( true ) );
+        assertTrue(builder.miCut.isEnabled());
+        assertTrue(builder.miCopy.isEnabled());
+        assertFalse(builder.miPaste.isEnabled());
+        assertTrue(builder.miDeleteSelectedCells.isEnabled());
+        assertTrue(builder.miDeleteSelectedColumns.isEnabled());
+        assertTrue(builder.miDeleteSelectedRows.isEnabled());
+        assertTrue(builder.miOtherwiseCell.isEnabled());
+// TODO {manstis} miOtherwiseCell needs to be a Custom Widget to handle a check-mark
+//        verify( builder.miOtherwiseCell,
+//                times( 1 ) ).setOtherwiseCell( eq( true ) );
     }
 
     @Test
     public void testOnDecisionTableSelectionsChangedEventWithSelectionsWithClipboardPopulated() {
-        model.getMetadataCols().add( new MetadataCol52() );
-        model.getData().add( new ArrayList<DTCellValue52>() {{
-            add( new DTCellValue52( 1 ) );
-            add( new DTCellValue52( "descr" ) );
-            add( new DTCellValue52( "md" ) );
-        }} );
+        model.getMetadataCols().add(new MetadataCol52());
+        model.getData().add(new ArrayList<DTCellValue52>() {{
+            add(new DTCellValue52(1));
+            add(new DTCellValue52("descr"));
+            add(new DTCellValue52("md"));
+        }});
 
-        uiModel.selectCell( 0,
-                            2 );
-        clipboard.setData( new HashSet<Clipboard.ClipboardData>() {{
-            add( new DefaultClipboard.ClipboardDataImpl( 0,
-                                                         2,
-                                                         model.getData().get( 0 ).get( 2 ) ) );
-        }} );
+        uiModel.selectCell(0,
+                           2);
+        clipboard.setData(new HashSet<Clipboard.ClipboardData>() {{
+            add(new DefaultClipboard.ClipboardDataImpl(0,
+                                                       2,
+                                                       model.getData().get(0).get(2)));
+        }});
 
-        builder.onDecisionTableSelectionsChangedEvent( new DecisionTableSelectionsChangedEvent( dtPresenter ) );
+        builder.onDecisionTableSelectionsChangedEvent(new DecisionTableSelectionsChangedEvent(dtPresenter));
 
-        verify( view,
-                times( 1 ) ).enableCutMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableCopyMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enablePasteMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableDeleteCellMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableDeleteColumnMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableDeleteRowMenuItem( eq( true ) );
-        verify( view,
-                times( 1 ) ).enableOtherwiseCellMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).setOtherwiseCell( eq( false ) );
+        assertTrue(builder.miCut.isEnabled());
+        assertTrue(builder.miCopy.isEnabled());
+        assertTrue(builder.miPaste.isEnabled());
+        assertTrue(builder.miDeleteSelectedCells.isEnabled());
+        assertTrue(builder.miDeleteSelectedColumns.isEnabled());
+        assertTrue(builder.miDeleteSelectedRows.isEnabled());
+        assertFalse(builder.miOtherwiseCell.isEnabled());
+// TODO {manstis} miOtherwiseCell needs to be a Custom Widget to handle a check-mark
+//        verify( builder.miOtherwiseCell,
+//                times( 1 ) ).setOtherwiseCell( eq( false ) );
     }
 
     @Test
     public void testOnDecisionTableSelectedEventReadOnly() {
-        dtPresenter.getAccess().setReadOnly( true );
-        builder.onDecisionTableSelectedEvent( new DecisionTableSelectedEvent( dtPresenter ) );
+        dtPresenter.getAccess().setReadOnly(true);
+        builder.onDecisionTableSelectedEvent(new DecisionTableSelectedEvent(dtPresenter));
 
-        verify( view,
-                times( 1 ) ).enableCutMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableCopyMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enablePasteMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableDeleteCellMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableDeleteColumnMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableDeleteRowMenuItem( eq( false ) );
-        verify( view,
-                times( 1 ) ).enableOtherwiseCellMenuItem( eq( false ) );
+        assertFalse(builder.miCut.isEnabled());
+        assertFalse(builder.miCopy.isEnabled());
+        assertFalse(builder.miPaste.isEnabled());
+        assertFalse(builder.miDeleteSelectedCells.isEnabled());
+        assertFalse(builder.miDeleteSelectedColumns.isEnabled());
+        assertFalse(builder.miDeleteSelectedRows.isEnabled());
+        assertFalse(builder.miOtherwiseCell.isEnabled());
     }
-
 }
