@@ -142,6 +142,24 @@ public class DecisionTableAnalyzerFromFileTest extends AnalyzerUpdateTestBase {
     }
 
     @Test
+    public void testCrazyConflictMessages() throws
+            Exception {
+        final String xml = loadResource("GUVNOR-3513.gdst");
+
+        final GuidedDecisionTable52 table52 = GuidedDTXMLPersistence.getInstance()
+                .unmarshal(xml);
+
+        final Analyzer analyzer = analyzerProvider.makeAnalyser(table52);
+
+        analyzer.resetChecks();
+        analyzer.analyze();
+
+        assertDoesNotContain("ThisRowIsRedundantTo",
+                             analyzerProvider.getAnalysisReport());
+    }
+
+
+    @Test
     public void testFileScoreAchievementsGDST() throws
             Exception {
         analyzerProvider.getFactTypes()
