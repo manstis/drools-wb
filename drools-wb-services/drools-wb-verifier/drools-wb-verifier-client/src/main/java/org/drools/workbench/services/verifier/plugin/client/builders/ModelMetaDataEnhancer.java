@@ -40,22 +40,27 @@ public class ModelMetaDataEnhancer {
     public HeaderMetaData getHeaderMetaData() {
 
         int columnIndex = 0;
-        final Map<Integer, Pattern52> map = new HashMap();
+        final Map<Integer, ModelMetaData> map = new HashMap<>();
 
         for (final BaseColumn baseColumn : model.getExpandedColumns()) {
             if (baseColumn instanceof ConditionCol52) {
                 map.put(columnIndex,
-                        model.getPattern((ConditionCol52) baseColumn));
+                        new ModelMetaData(model.getPattern((ConditionCol52) baseColumn),
+                                          PatternType.LHS));
+
             } else if (baseColumn instanceof ActionInsertFactCol52) {
                 final ActionInsertFactCol52 aif = (ActionInsertFactCol52) baseColumn;
                 map.put(columnIndex,
-                        new FactPattern52Adaptor(aif.getFactType(),
-                                                 aif.getBoundName()));
+                        new ModelMetaData(new FactPattern52Adaptor(aif.getFactType(),
+                                                                   aif.getBoundName()),
+                                          PatternType.RHS));
+
             } else if (baseColumn instanceof ActionSetFieldCol52) {
                 final ActionSetFieldCol52 asf = (ActionSetFieldCol52) baseColumn;
                 map.put(columnIndex,
-                        new FactPattern52Adaptor(getFactType(asf),
-                                                 asf.getBoundName()));
+                        new ModelMetaData(new FactPattern52Adaptor(getFactType(asf),
+                                                                   asf.getBoundName()),
+                                          PatternType.RHS));
             }
 
             columnIndex++;
@@ -79,6 +84,31 @@ public class ModelMetaDataEnhancer {
                 .findFirst()
                 .map(ActionInsertFactCol52::getFactType)
                 .get();
+    }
+
+    public enum PatternType {
+        LHS,
+        RHS
+    }
+
+    public class ModelMetaData {
+
+        private final Pattern52 pattern;
+        private final PatternType patternType;
+
+        public ModelMetaData(final Pattern52 pattern,
+                             final PatternType patternType) {
+            this.pattern = pattern;
+            this.patternType = patternType;
+        }
+
+        public Pattern52 getPattern() {
+            return pattern;
+        }
+
+        public PatternType getPatternType() {
+            return patternType;
+        }
     }
 
     public class FactPattern52Adaptor extends Pattern52 {

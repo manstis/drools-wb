@@ -113,7 +113,7 @@ public class ToString {
             builder.append( integer );
             builder.append( ":" );
             builder.append( toString( headerMetaData.getPatternsByColumnNumber()
-                                              .get( integer ) ) );
+                                              .get( integer ).getPattern() ) );
             builder.append( "\n" );
         }
 

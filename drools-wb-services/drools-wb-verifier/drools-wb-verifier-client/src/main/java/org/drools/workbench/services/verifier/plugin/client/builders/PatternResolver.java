@@ -15,13 +15,13 @@
  */
 package org.drools.workbench.services.verifier.plugin.client.builders;
 
-import org.drools.workbench.models.guided.dtable.shared.model.Pattern52;
 import org.drools.workbench.services.verifier.api.client.configuration.AnalyzerConfiguration;
 import org.drools.workbench.services.verifier.api.client.index.Index;
 import org.drools.workbench.services.verifier.api.client.index.ObjectType;
 import org.drools.workbench.services.verifier.api.client.index.Pattern;
 import org.drools.workbench.services.verifier.api.client.index.Rule;
 import org.drools.workbench.services.verifier.plugin.client.api.HeaderMetaData;
+import org.drools.workbench.services.verifier.plugin.client.builders.ModelMetaDataEnhancer.PatternType;
 import org.uberfire.commons.validation.PortablePreconditions;
 
 public class PatternResolver {
@@ -78,7 +78,9 @@ public class PatternResolver {
                                               resolveObjectType(getFactType()),
                                               configuration);
 
-            rule.getPatterns().add(build);
+            if (getPatternType() == PatternType.LHS) {
+                rule.getPatterns().add(build);
+            }
 
             return build;
         } else {
@@ -87,17 +89,32 @@ public class PatternResolver {
     }
 
     private String getFactType() {
-        final Pattern52 pattern52 = headerMetaData.getPatternsByColumnNumber()
+        final String factType = headerMetaData
+                .getPatternsByColumnNumber()
                 .get(PortablePreconditions.checkNotNull("columnIndex",
-                                                        columnIndex));
-        return pattern52.getFactType();
+                                                        columnIndex))
+                .getPattern()
+                .getFactType();
+        return factType;
     }
 
     private String getBoundName() {
-        final Pattern52 pattern52 = headerMetaData.getPatternsByColumnNumber()
+        final String boundName = headerMetaData
+                .getPatternsByColumnNumber()
                 .get(PortablePreconditions.checkNotNull("columnIndex",
-                                                        columnIndex));
-        return pattern52.getBoundName();
+                                                        columnIndex))
+                .getPattern()
+                .getBoundName();
+        return boundName;
+    }
+
+    private PatternType getPatternType() {
+        final PatternType patternType = headerMetaData
+                .getPatternsByColumnNumber()
+                .get(PortablePreconditions.checkNotNull("columnIndex",
+                                                        columnIndex))
+                .getPatternType();
+        return patternType;
     }
 
     public PatternResolver with(final Rule rule) {
