@@ -81,8 +81,10 @@ public class PatternResolver {
             final Pattern build = new Pattern( getBoundName(),
                                                resolveObjectType( getFactType() ),
                                                configuration );
-            rule.getPatterns()
-                    .add( build );
+
+            if(actionCol52==null) {
+                rule.getPatterns().add(build);
+            }
 
             return build;
         } else {
@@ -92,7 +94,7 @@ public class PatternResolver {
 
     private String getFactType() {
         if ( actionCol52 instanceof ActionInsertFactCol52 ) {
-            return ( (ActionInsertFactCol52) actionCol52 ).getFactType();
+            return ((ActionInsertFactCol52) actionCol52).getFactType();
         } else {
             final Pattern52 pattern52 = headerMetaData.getPatternsByColumnNumber()
                     .get( PortablePreconditions.checkNotNull( "columnIndex",
