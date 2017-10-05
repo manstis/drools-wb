@@ -104,18 +104,10 @@ public class FieldResolver {
             return pattern;
         } else {
 
-            final PatternResolver patternResolver = builderFactory.getPatternResolver()
+            return builderFactory.getPatternResolver()
                     .with( rule )
-                    .with( columnIndex );
-
-            if ( baseColumn instanceof ActionCol52 ) {
-                return patternResolver
-                        .with( (ActionCol52) baseColumn )
-                        .resolve();
-            } else {
-                return patternResolver
-                        .resolve();
-            }
+                    .with( columnIndex )
+                    .resolve();
         }
     }
 

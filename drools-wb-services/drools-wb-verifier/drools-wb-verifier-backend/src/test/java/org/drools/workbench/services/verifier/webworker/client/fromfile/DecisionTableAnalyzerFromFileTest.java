@@ -154,10 +154,10 @@ public class DecisionTableAnalyzerFromFileTest extends AnalyzerUpdateTestBase {
         analyzer.resetChecks();
         analyzer.analyze();
 
-        assertDoesNotContain("ThisRowIsRedundantTo",
-                             analyzerProvider.getAnalysisReport());
-    }
+        analyzerProvider.getAnalysisReport().stream().forEach(i->System.out.println(i.getCheckType()));
 
+        assertTrue(analyzerProvider.getAnalysisReport().isEmpty());
+    }
 
     @Test
     public void testFileScoreAchievementsGDST() throws

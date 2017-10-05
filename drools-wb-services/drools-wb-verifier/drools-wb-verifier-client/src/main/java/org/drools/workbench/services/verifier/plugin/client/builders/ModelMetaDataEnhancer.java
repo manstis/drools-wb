@@ -46,10 +46,16 @@ public class ModelMetaDataEnhancer {
             if (baseColumn instanceof ConditionCol52) {
                 map.put(columnIndex,
                         model.getPattern((ConditionCol52) baseColumn));
-            } else if (baseColumn instanceof ActionSetFieldCol52) {
+            } else if (baseColumn instanceof ActionInsertFactCol52) {
+                final ActionInsertFactCol52 aif = (ActionInsertFactCol52) baseColumn;
                 map.put(columnIndex,
-                        new FactPattern52Adaptor(model,
-                                                 (ActionSetFieldCol52) baseColumn));
+                        new FactPattern52Adaptor(aif.getFactType(),
+                                                 aif.getBoundName()));
+            } else if (baseColumn instanceof ActionSetFieldCol52) {
+                final ActionSetFieldCol52 asf = (ActionSetFieldCol52) baseColumn;
+                map.put(columnIndex,
+                        new FactPattern52Adaptor(getFactType(asf),
+                                                 asf.getBoundName()));
             }
 
             columnIndex++;
@@ -58,38 +64,42 @@ public class ModelMetaDataEnhancer {
         return new HeaderMetaData(map);
     }
 
+    private String getFactType(final ActionSetFieldCol52 asf) {
+        final String binding = asf.getBoundName();
+        final Optional<Pattern52> pattern = Optional.ofNullable(model.getConditionPattern(binding));
+        if (pattern.isPresent()) {
+            return pattern.get().getFactType();
+        }
+
+        return model.getActionCols()
+                .stream()
+                .filter(c -> c instanceof ActionInsertFactCol52)
+                .map(c -> (ActionInsertFactCol52) c)
+                .filter(c -> c.getBoundName().equals(binding))
+                .findFirst()
+                .map(ActionInsertFactCol52::getFactType)
+                .get();
+    }
+
     public class FactPattern52Adaptor extends Pattern52 {
 
-        private final GuidedDecisionTable52 model;
-        private final ActionSetFieldCol52 delegate;
+        private final String factType;
+        private final String binding;
 
-        public FactPattern52Adaptor(final GuidedDecisionTable52 model,
-                                    final ActionSetFieldCol52 delegate) {
-            this.model = model;
-            this.delegate = delegate;
+        public FactPattern52Adaptor(final String factType,
+                                    final String binding) {
+            this.factType = factType;
+            this.binding = binding;
         }
 
         @Override
         public String getFactType() {
-            final String binding = getBoundName();
-            final Optional<Pattern52> pattern = Optional.ofNullable(model.getConditionPattern(binding));
-            if(pattern.isPresent()) {
-                return pattern.get().getFactType();
-            }
-
-            return model.getActionCols()
-                    .stream()
-                    .filter(c -> c instanceof ActionInsertFactCol52)
-                    .map(c -> (ActionInsertFactCol52) c)
-                    .filter(c -> c.getBoundName().equals(binding))
-                    .findFirst()
-                    .map(ActionInsertFactCol52::getFactType)
-                    .get();
+            return factType;
         }
 
         @Override
         public String getBoundName() {
-            return delegate.getBoundName();
+            return binding;
         }
     }
 }
